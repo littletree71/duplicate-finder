@@ -1,7 +1,9 @@
 const { ipcRenderer, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
 let selectedFolders = [];
+let allResults = [];
 
 document.getElementById('selectBtn').addEventListener('click', async () => {
   selectedFolders = await ipcRenderer.invoke('select-folders');
@@ -24,15 +26,29 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
 
   const config = { folders: selectedFolders, useDate, useHash, extFilter };
   const duplicates = await ipcRenderer.invoke('find-duplicates', config);
+  allResults = duplicates;
+  renderResults(duplicates);
+});
+
+document.getElementById('filterInput').addEventListener('input', debounce(() => {
+  const keyword = document.getElementById('filterInput').value.trim().toLowerCase();
+  const filtered = allResults.filter(group =>
+    group.files.some(file => file.toLowerCase().includes(keyword))
+  );
+  renderResults(filtered);
+}, 300));
+
+
+function renderResults(groups) {
   const result = document.getElementById('result');
   result.innerHTML = '';
 
-  if (duplicates.length === 0) {
-    result.innerHTML = '<li>No duplicates found.</li>';
+  if (groups.length === 0) {
+    result.innerHTML = '<li>No matching duplicates found.</li>';
     return;
   }
 
-  for (const group of duplicates) {
+  for (const group of groups) {
     const li = document.createElement('li');
     const title = document.createElement('strong');
     title.textContent = `Duplicate Group: ${group.key}`;
@@ -68,7 +84,7 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
 
       const folderLink = document.createElement('a');
       folderLink.href = '#';
-      folderLink.textContent = '[Open Folder]';
+      folderLink.textContent = ' [Open Folder]';
       folderLink.style.marginLeft = '0.5rem';
       folderLink.addEventListener('click', (e) => {
         e.preventDefault();
@@ -98,10 +114,18 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     li.appendChild(table);
     result.appendChild(li);
   }
-});
+}
 
 function formatSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function debounce(fn, delay) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
 }
