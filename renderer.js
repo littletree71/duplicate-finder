@@ -15,6 +15,10 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     alert('Please select folders first!');
     return;
   }
+  
+  // 顯示 Loading 訊息
+  document.getElementById('loadingMessage').style.display = 'block';
+  document.getElementById('result').innerHTML = '';
 
   const useDate = document.getElementById('useDate').checked;
   const useHash = document.getElementById('useHash').checked;
@@ -28,6 +32,9 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
   const duplicates = await ipcRenderer.invoke('find-duplicates', config);
   allResults = duplicates;
   renderResults(duplicates);
+  
+  // 隱藏 Loading 訊息
+  document.getElementById('loadingMessage').style.display = 'none';
 });
 
 document.getElementById('filterInput').addEventListener('input', debounce(() => {
