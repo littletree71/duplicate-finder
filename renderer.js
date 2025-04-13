@@ -38,15 +38,33 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     title.textContent = `Duplicate Group: ${group.key}`;
     li.appendChild(title);
 
-    const list = document.createElement('div');
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'separate';
+    table.style.borderSpacing = '1rem';
 
-    for (const file of group.files) {
-      const div = document.createElement('div');
-      div.className = 'file-entry';
+    let row;
+
+    group.files.forEach((file, index) => {
+      if (index % 2 === 0) {
+        row = document.createElement('tr');
+        table.appendChild(row);
+      }
+
+      const td = document.createElement('td');
+      td.style.verticalAlign = 'top';
+      td.style.background = '#f9f9f9';
+      td.style.border = '1px solid #ddd';
+      td.style.padding = '0.5rem';
+      td.style.borderRadius = '6px';
+      td.style.width = '50%';
 
       const stats = fs.statSync(file);
       const date = new Date(stats.mtimeMs).toLocaleString();
       const size = formatSize(stats.size);
+
+      const pathLine = document.createElement('div');
+      pathLine.textContent = file;
 
       const folderLink = document.createElement('a');
       folderLink.href = '#';
@@ -56,34 +74,28 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
         e.preventDefault();
         shell.showItemInFolder(file);
       });
-
-      const infoLine = document.createElement('div');
-      infoLine.textContent = `${file}`;
-      infoLine.appendChild(folderLink);
+      pathLine.appendChild(folderLink);
 
       const metaLine = document.createElement('div');
       metaLine.style.fontSize = '0.9em';
       metaLine.style.color = '#666';
       metaLine.textContent = `Last Modified: ${date} | Size: ${size}`;
 
-      div.appendChild(infoLine);
-      div.appendChild(metaLine);
+      td.appendChild(pathLine);
+      td.appendChild(metaLine);
 
       const ext = path.extname(file).toLowerCase();
       if (['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext)) {
         const img = document.createElement('img');
         img.src = `file://${file}`;
         img.className = 'thumb';
-        const imgGroup = document.createElement('div');
-        imgGroup.className = 'image-group';
-        imgGroup.appendChild(img);
-        div.appendChild(imgGroup);
+        td.appendChild(img);
       }
 
-      list.appendChild(div);
-    }
+      row.appendChild(td);
+    });
 
-    li.appendChild(list);
+    li.appendChild(table);
     result.appendChild(li);
   }
 });
