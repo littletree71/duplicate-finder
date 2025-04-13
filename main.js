@@ -28,11 +28,6 @@ function getFileHash(filePath) {
   return crypto.createHash('md5').update(buffer).digest('hex');
 }
 
-function isImage(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext);
-}
-
 ipcMain.handle('find-duplicates', async (event, config) => {
   const { folders, useDate, useHash, extFilter } = config;
   const fileMap = new Map();
