@@ -100,6 +100,20 @@ function renderResults(groups) {
       });
       pathLine.appendChild(folderLink);
 
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '❌';
+      deleteBtn.title = 'Delete this file';
+      deleteBtn.style.marginLeft = '0.5rem';
+      deleteBtn.style.color = 'red';
+      deleteBtn.style.border = 'none';
+      deleteBtn.style.background = 'transparent';
+      deleteBtn.style.cursor = 'pointer';
+      deleteBtn.addEventListener('click', () => {
+        deleteFile(file);
+      });
+      pathLine.appendChild(deleteBtn);
+
+
       const metaLine = document.createElement('div');
       metaLine.style.fontSize = '0.9em';
       metaLine.style.color = '#666';
@@ -154,3 +168,48 @@ function updateFolderList() {
     list.appendChild(badge);
   });
 }
+
+async function deleteFile(filePath) {
+  const confirmed = confirm(`Are you sure you want to move this file to the Recycle Bin?\n\n${filePath}`);
+  if (!confirmed) return;
+
+  try {
+    await shell.trashItem(filePath);
+    logDeletion(filePath);
+
+    alert('File moved to Recycle Bin.');
+
+    // 從 allResults 中移除該檔案並重新 render
+    allResults.forEach(group => {
+      group.files = group.files.filter(f => f !== filePath);
+    });
+    allResults = allResults.filter(group => group.files.length > 1);
+    renderResults(allResults);
+  } catch (err) {
+    alert(`Failed to delete file:\n\n${err.message}`);
+  }
+}
+
+const logPath = path.join(__dirname, 'delete-log.txt');
+
+function logDeletion(filePath) {
+  const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  const line = `[${now}] Deleted: ${filePath}\n`;
+  fs.appendFile(getLogPath(), line, (err) => {
+    if (err) console.error('Failed to log deletion:', err);
+  });
+}
+
+function getLogPath() {
+  const today = new Date().toISOString().substring(0, 10); // 2025-04-14
+  return path.join(__dirname, `delete-log-${today}.txt`);
+}
+
+document.getElementById('viewLogBtn').addEventListener('click', () => {
+  const logFile = getLogPath();
+  if (!fs.existsSync(logFile)) {
+    alert('No log file for today yet.');
+    return;
+  }
+  shell.openPath(logFile);
+});
