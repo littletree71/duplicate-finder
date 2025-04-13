@@ -1,5 +1,6 @@
 const { ipcRenderer, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 let selectedFolders = [];
 
 document.getElementById('selectBtn').addEventListener('click', async () => {
@@ -43,6 +44,10 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
       const div = document.createElement('div');
       div.className = 'file-entry';
 
+      const stats = fs.statSync(file);
+      const date = new Date(stats.mtimeMs).toLocaleString();
+      const size = formatSize(stats.size);
+
       const folderLink = document.createElement('a');
       folderLink.href = '#';
       folderLink.textContent = '[Open Folder]';
@@ -52,8 +57,17 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
         shell.showItemInFolder(file);
       });
 
-      div.textContent = file;
-      div.appendChild(folderLink);
+      const infoLine = document.createElement('div');
+      infoLine.textContent = `${file}`;
+      infoLine.appendChild(folderLink);
+
+      const metaLine = document.createElement('div');
+      metaLine.style.fontSize = '0.9em';
+      metaLine.style.color = '#666';
+      metaLine.textContent = `Last Modified: ${date} | Size: ${size}`;
+
+      div.appendChild(infoLine);
+      div.appendChild(metaLine);
 
       const ext = path.extname(file).toLowerCase();
       if (['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext)) {
@@ -73,3 +87,9 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
     result.appendChild(li);
   }
 });
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
