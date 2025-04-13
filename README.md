@@ -8,7 +8,7 @@ A minimal and fast Electron-based tool to find and manage duplicate files across
 - 🧠 Match by filename, size, date, or MD5 hash
 - 🖼️ Image preview with thumbnail support
 - 🗂️ Extension filter (.jpg, .png, etc.)
-- ❌ Safe delete to Recycle Bin with confirmation
+- 🗑️ Safe delete to Recycle Bin with confirmation
 - 📁 View selected folders in a card layout
 - 🔎 Real-time result filtering by keyword
 - 📝 Daily deletion log with open/view support

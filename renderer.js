@@ -6,8 +6,15 @@ let selectedFolders = [];
 let allResults = [];
 
 document.getElementById('selectBtn').addEventListener('click', async () => {
-  selectedFolders = await ipcRenderer.invoke('select-folders');
+  const newFolders = await ipcRenderer.invoke('select-folders');
   
+  // 避免重複加入相同的資料夾
+  newFolders.forEach(folder => {
+    if (!selectedFolders.includes(folder)) {
+      selectedFolders.push(folder);
+    }
+  });
+
   updateFolderList();
 });
 
@@ -101,7 +108,7 @@ function renderResults(groups) {
       pathLine.appendChild(folderLink);
 
       const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = '❌';
+      deleteBtn.textContent = '🗑️';
       deleteBtn.title = 'Delete this file';
       deleteBtn.style.marginLeft = '0.5rem';
       deleteBtn.style.color = 'red';
@@ -161,10 +168,27 @@ function updateFolderList() {
     return;
   }
 
-  selectedFolders.forEach(folder => {
+  selectedFolders.forEach((folder, index) => {
     const badge = document.createElement('span');
     badge.textContent = folder;
     badge.className = 'folder-badge';
+
+    // 新增刪除按鈕
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '❌';
+    removeBtn.title = 'Remove this folder';
+    removeBtn.style.marginLeft = '0.5rem';
+    removeBtn.style.color = 'red';
+    removeBtn.style.border = 'none';
+    removeBtn.style.background = 'transparent';
+    removeBtn.style.cursor = 'pointer';
+
+    removeBtn.addEventListener('click', () => {
+      selectedFolders.splice(index, 1); // 移除該資料夾
+      updateFolderList(); // 更新列表
+    });
+
+    badge.appendChild(removeBtn);
     list.appendChild(badge);
   });
 }
