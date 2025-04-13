@@ -89,6 +89,26 @@
       display: flex;
       flex-wrap: wrap;
     }
+
+    .folder-list-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: #f4f7fa;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .folder-badge {
+      padding: 0.3rem 0.6rem;
+      background: #e6eef4;
+      border: 1px solid #ccdce6;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: #333;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -112,6 +132,11 @@
     </label>
   </div>
 
+  <div id="folderListCard" style="margin-top: 1rem;">
+    <h3 style="margin-bottom: 0.5rem; color: #444;">📁 Selected Folders</h3>
+    <div id="folderList" class="folder-list-box"></div>
+  </div>  
+  
   <hr>
 
   <div id="loadingMessage" style="display:none; color:#888; text-align:center; margin:1rem 0;">

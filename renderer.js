@@ -7,7 +7,8 @@ let allResults = [];
 
 document.getElementById('selectBtn').addEventListener('click', async () => {
   selectedFolders = await ipcRenderer.invoke('select-folders');
-  alert(`Selected:\n${selectedFolders.join('\n')}`);
+  
+  updateFolderList();
 });
 
 document.getElementById('scanBtn').addEventListener('click', async () => {
@@ -135,4 +136,21 @@ function debounce(fn, delay) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), delay);
   };
+}
+
+function updateFolderList() {
+  const list = document.getElementById('folderList');
+  list.innerHTML = '';
+
+  if (selectedFolders.length === 0) {
+    list.textContent = 'No folders selected.';
+    return;
+  }
+
+  selectedFolders.forEach(folder => {
+    const badge = document.createElement('span');
+    badge.textContent = folder;
+    badge.className = 'folder-badge';
+    list.appendChild(badge);
+  });
 }
