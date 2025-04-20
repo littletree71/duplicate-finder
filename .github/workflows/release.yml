@@ -19,6 +19,10 @@ jobs:
       - run: npm install
       - run: npm run build --if-present
 
+      - name: Compress Build Output
+        run: |
+          powershell Compress-Archive -Path ./dist/win-unpacked/* -DestinationPath ./dist/duplicate-finder-${{ github.ref_name }}.zip
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
