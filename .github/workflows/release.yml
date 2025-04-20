@@ -38,6 +38,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/win-unpacked
+          asset_path: ./dist/duplicate-finder-${{ github.ref_name }}.zip
           asset_name: duplicate-finder-${{ github.ref_name }}.zip
           asset_content_type: application/zip
