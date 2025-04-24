@@ -64,87 +64,100 @@ function renderResults(groups) {
     return;
   }
 
-  for (const group of groups) {
-    const li = document.createElement('li');
-    const title = document.createElement('strong');
-    title.textContent = `Duplicate Group: ${group.key}`;
-    li.appendChild(title);
+  let index = 0;
 
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'separate';
-    table.style.borderSpacing = '1rem';
+  function renderChunk() {
+    const chunkSize = 10; // 每次渲染 10 組
+    const chunk = groups.slice(index, index + chunkSize);
 
-    let row;
+    for (const group of chunk) {
+      const li = document.createElement('li');
+      const title = document.createElement('strong');
+      title.textContent = `Duplicate Group: ${group.key}`;
+      li.appendChild(title);
 
-    group.files.forEach((file, index) => {
-      if (index % 2 === 0) {
-        row = document.createElement('tr');
-        table.appendChild(row);
-      }
+      const table = document.createElement('table');
+      table.style.width = '100%';
+      table.style.borderCollapse = 'separate';
+      table.style.borderSpacing = '1rem';
 
-      const td = document.createElement('td');
-      td.style.verticalAlign = 'top';
-      td.style.background = '#f9f9f9';
-      td.style.border = '1px solid #ddd';
-      td.style.padding = '0.5rem';
-      td.style.borderRadius = '6px';
-      td.style.width = '50%';
+      let row;
 
-      const stats = fs.statSync(file);
-      const date = new Date(stats.mtimeMs).toLocaleString();
-      const size = formatSize(stats.size);
+      group.files.forEach((file, fileIndex) => {
+        if (fileIndex % 2 === 0) {
+          row = document.createElement('tr');
+          table.appendChild(row);
+        }
 
-      const pathLine = document.createElement('div');
-      pathLine.textContent = file;
+        const td = document.createElement('td');
+        td.style.verticalAlign = 'top';
+        td.style.background = '#f9f9f9';
+        td.style.border = '1px solid #ddd';
+        td.style.padding = '0.5rem';
+        td.style.borderRadius = '6px';
+        td.style.width = '50%';
 
-      const folderLink = document.createElement('a');
-      folderLink.href = '#';
-      folderLink.textContent = ' [Open Folder]';
-      folderLink.style.marginLeft = '0.5rem';
-      folderLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        shell.showItemInFolder(file);
+        const stats = fs.statSync(file);
+        const date = new Date(stats.mtimeMs).toLocaleString();
+        const size = formatSize(stats.size);
+
+        const pathLine = document.createElement('div');
+        pathLine.textContent = file;
+
+        const folderLink = document.createElement('a');
+        folderLink.href = '#';
+        folderLink.textContent = ' [Open Folder]';
+        folderLink.style.marginLeft = '0.5rem';
+        folderLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          shell.showItemInFolder(file);
+        });
+        pathLine.appendChild(folderLink);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.title = 'Delete this file';
+        deleteBtn.style.marginLeft = '0.5rem';
+        deleteBtn.style.color = 'red';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.background = 'transparent';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.addEventListener('click', () => {
+          deleteFile(file);
+        });
+        pathLine.appendChild(deleteBtn);
+
+        const metaLine = document.createElement('div');
+        metaLine.style.fontSize = '0.9em';
+        metaLine.style.color = '#666';
+        metaLine.textContent = `Last Modified: ${date} | Size: ${size}`;
+
+        td.appendChild(pathLine);
+        td.appendChild(metaLine);
+
+        const ext = path.extname(file).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext)) {
+          const img = document.createElement('img');
+          img.src = `file://${file}`;
+          img.className = 'thumb';
+          img.loading = 'lazy'; // 延遲加載圖片
+          td.appendChild(img);
+        }
+
+        row.appendChild(td);
       });
-      pathLine.appendChild(folderLink);
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.title = 'Delete this file';
-      deleteBtn.style.marginLeft = '0.5rem';
-      deleteBtn.style.color = 'red';
-      deleteBtn.style.border = 'none';
-      deleteBtn.style.background = 'transparent';
-      deleteBtn.style.cursor = 'pointer';
-      deleteBtn.addEventListener('click', () => {
-        deleteFile(file);
-      });
-      pathLine.appendChild(deleteBtn);
+      li.appendChild(table);
+      result.appendChild(li);
+    }
 
-
-      const metaLine = document.createElement('div');
-      metaLine.style.fontSize = '0.9em';
-      metaLine.style.color = '#666';
-      metaLine.textContent = `Last Modified: ${date} | Size: ${size}`;
-
-      td.appendChild(pathLine);
-      td.appendChild(metaLine);
-
-      const ext = path.extname(file).toLowerCase();
-      if (['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext)) {
-        const img = document.createElement('img');
-        img.src = `file://${file}`;
-        img.className = 'thumb';
-        img.loading = 'lazy'; // 延遲加載圖片
-        td.appendChild(img);
-      }
-
-      row.appendChild(td);
-    });
-
-    li.appendChild(table);
-    result.appendChild(li);
+    index += chunkSize;
+    if (index < groups.length) {
+      setTimeout(renderChunk, 50); // 延遲渲染下一批
+    }
   }
+
+  renderChunk();
 }
 
 function formatSize(bytes) {
