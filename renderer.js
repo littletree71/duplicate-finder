@@ -135,6 +135,7 @@ function renderResults(groups) {
         const img = document.createElement('img');
         img.src = `file://${file}`;
         img.className = 'thumb';
+        img.loading = 'lazy'; // 延遲加載圖片
         td.appendChild(img);
       }
 
