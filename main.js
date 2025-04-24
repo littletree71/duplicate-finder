@@ -29,7 +29,7 @@ function getFileHash(filePath) {
 }
 
 ipcMain.handle('find-duplicates', async (event, config) => {
-  const { folders, useDate, useHash, extFilter } = config;
+  const { folders, useDate, useHash, extFilter, useSize } = config;
   const fileMap = new Map();
   const duplicates = [];
 
@@ -46,7 +46,8 @@ ipcMain.handle('find-duplicates', async (event, config) => {
         const stats = fs.statSync(fullPath);
         const hash = useHash ? getFileHash(fullPath) : '';
         const date = useDate ? stats.mtimeMs : '';
-        const key = `${entry.name}_${stats.size}_${hash}_${date}`;
+        const size = useSize ? stats.size : 0;
+        const key = `${entry.name}_${size}_${hash}_${date}`;
 
         if (fileMap.has(key)) {
           fileMap.get(key).push(fullPath);

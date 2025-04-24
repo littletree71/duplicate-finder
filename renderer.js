@@ -30,13 +30,14 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
 
   const useDate = document.getElementById('useDate').checked;
   const useHash = document.getElementById('useHash').checked;
+  const useSize = document.getElementById('useSize').checked;
   const extFilterRaw = document.getElementById('extFilter').value;
   const extFilter = extFilterRaw
     .split(',')
     .map(x => x.trim().toLowerCase())
     .filter(x => x.startsWith('.'));
 
-  const config = { folders: selectedFolders, useDate, useHash, extFilter };
+  const config = { folders: selectedFolders, useDate, useHash, extFilter, useSize };
   const duplicates = await ipcRenderer.invoke('find-duplicates', config);
   allResults = duplicates;
   renderResults(duplicates);
